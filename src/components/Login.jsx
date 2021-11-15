@@ -1,5 +1,5 @@
 import react, { useState } from 'react';
-import { Redirect, useHistory } from 'react-router';
+import { useHistory } from 'react-router';
 import { createLoginCookie } from '../utils/cookies';
 export default function Login() {
   const [username, setUserName] = useState('');
@@ -9,7 +9,6 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('submitted', username, password);
     createLoginCookie(username);
     setUserName('');
     setPassword('');

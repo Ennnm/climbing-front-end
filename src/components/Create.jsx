@@ -1,14 +1,25 @@
 import react, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import axios from 'axios';
+import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+
+// axios.defaults.withCredentials = true;
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3002';
 
-const RouteList = ({ trips }) => {
-  const tripElems = trips.map((trip) => {
+const TripsList = ({ trips, setSelectedTrip }) => {
+  const tripElems = trips.map((trip, i) => {
+    const link = `/trips/${trip.id}`;
     return (
-      <li>
-        <h1>{trip.name}</h1>
+      <li key={`trip_${i.toString()}`}>
+        <Link
+          to={link}
+          onClick={(e) => {
+            setSelectedTrip(trip.id);
+          }}
+        >
+          {trip.name}
+        </Link>
       </li>
     );
   });
@@ -23,18 +34,22 @@ const Create = () => {
 
   const handleClick = (e) => {
     e.preventDefault();
+    console.log('name :>> ', name);
     //create new trip in db using name
     axios
-      .post(BACKEND_URL + '/routes', { name })
+      .post(BACKEND_URL + '/trips', { name }, (req, res) => {
+        console.log('req.body :>> ', req.body);
+      })
       .then((result) => {
-        console.log('result from creating trip :>> ', result);
+        console.log('result from creating trip :>> ', result.data);
+        const tripId = result.data.id;
+        setName('');
+        history.push(`/trips/${tripId}`);
       })
       .catch((e) => {
         console.log('error in creating trip');
       });
 
-    setName('');
-    history.push('/trips');
     //push history trip id
   };
 
@@ -52,24 +67,13 @@ const Create = () => {
   );
 };
 
-export default function CreateTrip() {
-  const [trips, setTrips] = useState([]);
-  useEffect(() => {
-    axios
-      .get(BACKEND_URL + '/trips')
-      .then((result) => {
-        console.log('results from trip index :>> ', result.data.trips);
-        setTrips(result.data.trips);
-      })
-      .catch((e) => {
-        console.log('error in getting trip index');
-      });
-  }, []);
+export default function CreateTrip({ setSelectedTrip, trips }) {
+  // const [trips, setTrips] = useState([]);
 
   return (
     <>
       <Create />
-      <RouteList trips={trips} />
+      <TripsList trips={trips} setSelectedTrip={setSelectedTrip} />
     </>
   );
 }
